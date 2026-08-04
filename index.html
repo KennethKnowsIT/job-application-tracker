@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="description"
+        content="A responsive job application tracker built with HTML, CSS, and JavaScript."
+    >
+
+    <title>Job Application Tracker</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app-shell">
+
+        <aside class="sidebar">
+            <div>
+                <p class="logo-mark">JT</p>
+                <h2>JobTrack</h2>
+                <p class="sidebar-copy">
+                    Stay organized from application to offer.
+                </p>
+            </div>
+
+            <div class="sidebar-footer">
+                <p>Built by Kenneth Morgan</p>
+                <p>HTML, CSS, JavaScript</p>
+            </div>
+        </aside>
+
+        <main class="main-content">
+
+            <header class="page-header">
+                <div>
+                    <p class="eyebrow">Career Dashboard</p>
+                    <h1>Job Application Tracker</h1>
+                    <p class="page-description">
+                        Keep track of applications, interviews, offers, and follow-ups in one place.
+                    </p>
+                </div>
+
+                <button class="primary-button" id="openFormButton" type="button">
+                    + Add Application
+                </button>
+            </header>
+
+            <section class="summary-section" aria-labelledby="summaryHeading">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">Overview</p>
+                        <h2 id="summaryHeading">Application Summary</h2>
+                    </div>
+                </div>
+
+                <div class="summary-grid">
+                    <article class="summary-card">
+                        <p>Total Applications</p>
+                        <strong id="totalCount">0</strong>
+                    </article>
+
+                    <article class="summary-card">
+                        <p>Applied</p>
+                        <strong id="appliedCount">0</strong>
+                    </article>
+
+                    <article class="summary-card">
+                        <p>Interviews</p>
+                        <strong id="interviewCount">0</strong>
+                    </article>
+
+                    <article class="summary-card">
+                        <p>Offers</p>
+                        <strong id="offerCount">0</strong>
+                    </article>
+
+                    <article class="summary-card">
+                        <p>Rejected</p>
+                        <strong id="rejectedCount">0</strong>
+                    </article>
+                </div>
+            </section>
+
+            <section class="controls-section" aria-label="Search and filter applications">
+                <div class="search-group">
+                    <label for="searchInput">Search applications</label>
+                    <input
+                        type="search"
+                        id="searchInput"
+                        placeholder="Search by company, title, or location"
+                    >
+                </div>
+
+                <div class="filter-group">
+                    <label for="statusFilter">Filter by status</label>
+                    <select id="statusFilter">
+                        <option value="all">All statuses</option>
+                        <option value="Applied">Applied</option>
+                        <option value="Interview">Interview</option>
+                        <option value="Offer">Offer</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+                </div>
+            </section>
+
+            <section class="applications-section" aria-labelledby="applicationsHeading">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">Pipeline</p>
+                        <h2 id="applicationsHeading">Your Applications</h2>
+                    </div>
+
+                    <p id="resultCount" class="result-count">0 applications</p>
+                </div>
+
+                <div id="emptyState" class="empty-state">
+                    <div class="empty-icon">◎</div>
+                    <h3>No applications yet</h3>
+                    <p>
+                        Add your first job application to start building your pipeline.
+                    </p>
+                    <button class="secondary-button" id="emptyStateButton" type="button">
+                        Add your first application
+                    </button>
+                </div>
+
+                <div id="applicationsGrid" class="applications-grid"></div>
+            </section>
+
+        </main>
+    </div>
+
+    <div class="modal-backdrop hidden" id="applicationModal">
+        <section
+            class="modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="formHeading"
+        >
+            <div class="modal-header">
+                <div>
+                    <p class="eyebrow">Application Details</p>
+                    <h2 id="formHeading">Add an Application</h2>
+                </div>
+
+                <button
+                    class="icon-button"
+                    id="closeFormButton"
+                    type="button"
+                    aria-label="Close application form"
+                >
+                    ×
+                </button>
+            </div>
+
+            <form id="applicationForm">
+                <input type="hidden" id="applicationId">
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="companyName">Company Name</label>
+                        <input
+                            type="text"
+                            id="companyName"
+                            name="companyName"
+                            placeholder="Example: Microsoft"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="jobTitle">Job Title</label>
+                        <input
+                            type="text"
+                            id="jobTitle"
+                            name="jobTitle"
+                            placeholder="Example: Junior Front End Developer"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="location">Location</label>
+                        <input
+                            type="text"
+                            id="location"
+                            name="location"
+                            placeholder="Example: Atlanta, GA or Remote"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="salary">Salary</label>
+                        <input
+                            type="text"
+                            id="salary"
+                            name="salary"
+                            placeholder="Example: $75,000"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="applicationDate">Application Date</label>
+                        <input
+                            type="date"
+                            id="applicationDate"
+                            name="applicationDate"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="status">Status</label>
+                        <select id="status" name="status" required>
+                            <option value="Applied">Applied</option>
+                            <option value="Interview">Interview</option>
+                            <option value="Offer">Offer</option>
+                            <option value="Rejected">Rejected</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="jobLink">Job Posting Link</label>
+                        <input
+                            type="url"
+                            id="jobLink"
+                            name="jobLink"
+                            placeholder="https://example.com/job"
+                        >
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="notes">Notes</label>
+                        <textarea
+                            id="notes"
+                            name="notes"
+                            rows="5"
+                            placeholder="Add recruiter names, interview details, follow-up reminders, or anything else."
+                        ></textarea>
+                    </div>
+                </div>
+
+                <p class="form-message" id="formMessage" aria-live="polite"></p>
+
+                <div class="form-actions">
+                    <button class="secondary-button" id="cancelButton" type="button">
+                        Cancel
+                    </button>
+
+                    <button class="primary-button" type="submit">
+                        Save Application
+                    </button>
+                </div>
+            </form>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
