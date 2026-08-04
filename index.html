@@ -1,257 +1,307 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta
-        name="description"
-        content="A responsive job application tracker built with HTML, CSS, and JavaScript."
-    >
-
-    <title>Job Application Tracker</title>
-
+    <meta name="description" content="A polished SaaS-style job application tracker by Kenneth Morgan.">
+    <title>JobTrack | Application Dashboard</title>
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+
     <div class="app-shell">
-
         <aside class="sidebar">
-            <div>
-                <p class="logo-mark">JT</p>
-                <h2>JobTrack</h2>
-                <p class="sidebar-copy">
-                    Stay organized from application to offer.
-                </p>
-            </div>
+            <a class="brand" href="#" aria-label="JobTrack home">
+                <span class="brand-mark">JT</span>
+                <span>
+                    <strong>JobTrack</strong>
+                    <small>Career command center</small>
+                </span>
+            </a>
 
-            <div class="sidebar-footer">
-                <p>Built by Kenneth Morgan</p>
-                <p>HTML, CSS, JavaScript</p>
+            <nav class="main-nav" aria-label="Primary navigation">
+                <button class="nav-button active" type="button" data-view="dashboard">
+                    <span aria-hidden="true">⌂</span> Dashboard
+                </button>
+                <button class="nav-button" type="button" data-view="analytics">
+                    <span aria-hidden="true">↗</span> Analytics
+                </button>
+                <button class="nav-button" type="button" data-view="documents">
+                    <span aria-hidden="true">▤</span> Documents
+                </button>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <div class="profile-chip">
+                    <span class="avatar">KM</span>
+                    <span>
+                        <strong>Kenneth Morgan</strong>
+                        <small>Portfolio project</small>
+                    </span>
+                </div>
+                <p class="storage-note">Your data stays in this browser.</p>
             </div>
         </aside>
 
         <main class="main-content">
-
-            <header class="page-header">
+            <header class="topbar">
                 <div>
-                    <p class="eyebrow">Career Dashboard</p>
-                    <h1>Job Application Tracker</h1>
-                    <p class="page-description">
-                        Keep track of applications, interviews, offers, and follow-ups in one place.
-                    </p>
+                    <p class="eyebrow">Career workspace</p>
+                    <h1 id="pageTitle">Dashboard</h1>
                 </div>
 
-                <button class="primary-button" id="openFormButton" type="button">
-                    + Add Application
-                </button>
+                <div class="topbar-actions">
+                    <button class="icon-button" id="themeToggle" type="button" aria-label="Switch theme">☀</button>
+                    <button class="secondary-button" id="exportButton" type="button">Export CSV</button>
+                    <button class="primary-button" id="openFormButton" type="button">+ Add application</button>
+                </div>
             </header>
 
-            <section class="summary-section" aria-labelledby="summaryHeading">
-                <div class="section-heading">
+            <section class="view active-view" id="dashboardView">
+                <div class="hero-panel glass-panel">
                     <div>
-                        <p class="eyebrow">Overview</p>
-                        <h2 id="summaryHeading">Application Summary</h2>
+                        <p class="eyebrow">Pipeline pulse</p>
+                        <h2>Turn applications into opportunities.</h2>
+                        <p>Track every role, interview, follow-up, and offer without letting details fall through the floorboards.</p>
+                    </div>
+                    <div class="hero-actions">
+                        <button class="primary-button" id="heroAddButton" type="button">Add application</button>
+                        <button class="ghost-button" id="loadDemoButton" type="button">Load demo data</button>
                     </div>
                 </div>
 
-                <div class="summary-grid">
-                    <article class="summary-card">
-                        <p>Total Applications</p>
-                        <strong id="totalCount">0</strong>
+                <section class="summary-grid" aria-label="Application summary">
+                    <article class="metric-card">
+                        <div class="metric-icon">◎</div>
+                        <div><p>Total</p><strong id="totalCount">0</strong></div>
                     </article>
-
-                    <article class="summary-card">
-                        <p>Applied</p>
-                        <strong id="appliedCount">0</strong>
+                    <article class="metric-card">
+                        <div class="metric-icon">↗</div>
+                        <div><p>Applied</p><strong id="appliedCount">0</strong></div>
                     </article>
-
-                    <article class="summary-card">
-                        <p>Interviews</p>
-                        <strong id="interviewCount">0</strong>
+                    <article class="metric-card">
+                        <div class="metric-icon">◷</div>
+                        <div><p>Interviews</p><strong id="interviewCount">0</strong></div>
                     </article>
-
-                    <article class="summary-card">
-                        <p>Offers</p>
-                        <strong id="offerCount">0</strong>
+                    <article class="metric-card">
+                        <div class="metric-icon">★</div>
+                        <div><p>Offers</p><strong id="offerCount">0</strong></div>
                     </article>
-
-                    <article class="summary-card">
-                        <p>Rejected</p>
-                        <strong id="rejectedCount">0</strong>
+                    <article class="metric-card">
+                        <div class="metric-icon">×</div>
+                        <div><p>Rejected</p><strong id="rejectedCount">0</strong></div>
                     </article>
-                </div>
-            </section>
+                </section>
 
-            <section class="controls-section" aria-label="Search and filter applications">
-                <div class="search-group">
-                    <label for="searchInput">Search applications</label>
-                    <input
-                        type="search"
-                        id="searchInput"
-                        placeholder="Search by company, title, or location"
-                    >
-                </div>
-
-                <div class="filter-group">
-                    <label for="statusFilter">Filter by status</label>
-                    <select id="statusFilter">
-                        <option value="all">All statuses</option>
-                        <option value="Applied">Applied</option>
-                        <option value="Interview">Interview</option>
-                        <option value="Offer">Offer</option>
-                        <option value="Rejected">Rejected</option>
-                    </select>
-                </div>
-            </section>
-
-            <section class="applications-section" aria-labelledby="applicationsHeading">
-                <div class="section-heading">
-                    <div>
-                        <p class="eyebrow">Pipeline</p>
-                        <h2 id="applicationsHeading">Your Applications</h2>
+                <section class="dashboard-grid">
+                    <div class="glass-panel chart-panel">
+                        <div class="section-heading">
+                            <div>
+                                <p class="eyebrow">Progress</p>
+                                <h2>Application status</h2>
+                            </div>
+                        </div>
+                        <canvas id="statusChart" width="700" height="290" aria-label="Application status chart"></canvas>
                     </div>
 
-                    <p id="resultCount" class="result-count">0 applications</p>
-                </div>
+                    <div class="glass-panel reminder-panel">
+                        <div class="section-heading">
+                            <div>
+                                <p class="eyebrow">Next moves</p>
+                                <h2>Upcoming reminders</h2>
+                            </div>
+                        </div>
+                        <div id="reminderList" class="reminder-list"></div>
+                    </div>
+                </section>
 
-                <div id="emptyState" class="empty-state">
-                    <div class="empty-icon">◎</div>
-                    <h3>No applications yet</h3>
-                    <p>
-                        Add your first job application to start building your pipeline.
-                    </p>
-                    <button class="secondary-button" id="emptyStateButton" type="button">
-                        Add your first application
-                    </button>
-                </div>
+                <section class="glass-panel applications-panel">
+                    <div class="section-heading stacked-on-mobile">
+                        <div>
+                            <p class="eyebrow">Pipeline</p>
+                            <h2>Your applications</h2>
+                        </div>
+                        <p id="resultCount" class="muted-text">0 applications</p>
+                    </div>
 
-                <div id="applicationsGrid" class="applications-grid"></div>
+                    <div class="controls-row">
+                        <label class="control-group">
+                            <span>Search</span>
+                            <input type="search" id="searchInput" placeholder="Company, title, or location">
+                        </label>
+
+                        <label class="control-group filter-control">
+                            <span>Status</span>
+                            <select id="statusFilter">
+                                <option value="all">All statuses</option>
+                                <option value="Applied">Applied</option>
+                                <option value="Interview">Interview</option>
+                                <option value="Offer">Offer</option>
+                                <option value="Rejected">Rejected</option>
+                            </select>
+                        </label>
+                    </div>
+
+                    <div id="emptyState" class="empty-state">
+                        <div class="empty-icon">◎</div>
+                        <h3>Your pipeline is waiting</h3>
+                        <p>Add an application or load demo data to see the dashboard spring to life.</p>
+                        <button class="secondary-button" id="emptyStateButton" type="button">Add first application</button>
+                    </div>
+
+                    <div id="applicationsGrid" class="applications-grid"></div>
+                </section>
             </section>
 
+            <section class="view" id="analyticsView">
+                <div class="analytics-grid">
+                    <article class="glass-panel insight-card">
+                        <p class="eyebrow">Conversion</p>
+                        <h2>Interview rate</h2>
+                        <strong id="interviewRate">0%</strong>
+                        <p>Applications that moved into interviews.</p>
+                    </article>
+                    <article class="glass-panel insight-card">
+                        <p class="eyebrow">Conversion</p>
+                        <h2>Offer rate</h2>
+                        <strong id="offerRate">0%</strong>
+                        <p>Applications that became offers.</p>
+                    </article>
+                    <article class="glass-panel insight-card">
+                        <p class="eyebrow">Momentum</p>
+                        <h2>This month</h2>
+                        <strong id="monthCount">0</strong>
+                        <p>Applications submitted this month.</p>
+                    </article>
+                </div>
+
+                <div class="glass-panel chart-panel analytics-chart">
+                    <div class="section-heading">
+                        <div>
+                            <p class="eyebrow">Trend</p>
+                            <h2>Applications by month</h2>
+                        </div>
+                    </div>
+                    <canvas id="timelineChart" width="1100" height="360" aria-label="Applications by month chart"></canvas>
+                </div>
+
+                <div class="glass-panel table-panel">
+                    <div class="section-heading">
+                        <div>
+                            <p class="eyebrow">Breakdown</p>
+                            <h2>Companies in your pipeline</h2>
+                        </div>
+                    </div>
+                    <div id="companyBreakdown" class="company-breakdown"></div>
+                </div>
+            </section>
+
+            <section class="view" id="documentsView">
+                <div class="documents-grid">
+                    <section class="glass-panel upload-panel">
+                        <p class="eyebrow">Resume vault</p>
+                        <h2>Keep your resume with your tracker</h2>
+                        <p class="muted-text">The file is stored locally in this browser using IndexedDB. It is not uploaded to GitHub or a server.</p>
+
+                        <label class="upload-dropzone" for="resumeInput">
+                            <span class="upload-icon">⇧</span>
+                            <strong>Choose a resume</strong>
+                            <span>PDF or Word document</span>
+                        </label>
+                        <input class="visually-hidden" id="resumeInput" type="file" accept=".pdf,.doc,.docx">
+
+                        <div id="resumeDetails" class="resume-details"></div>
+                    </section>
+
+                    <section class="glass-panel calendar-panel">
+                        <p class="eyebrow">Calendar</p>
+                        <h2>Interview and follow-up schedule</h2>
+                        <div id="calendarList" class="calendar-list"></div>
+                    </section>
+                </div>
+            </section>
         </main>
     </div>
 
-    <div class="modal-backdrop hidden" id="applicationModal">
-        <section
-            class="modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="formHeading"
-        >
-            <div class="modal-header">
-                <div>
-                    <p class="eyebrow">Application Details</p>
-                    <h2 id="formHeading">Add an Application</h2>
-                </div>
+    <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-                <button
-                    class="icon-button"
-                    id="closeFormButton"
-                    type="button"
-                    aria-label="Close application form"
-                >
-                    ×
-                </button>
+    <div class="modal-backdrop hidden" id="applicationModal">
+        <section class="modal glass-panel" role="dialog" aria-modal="true" aria-labelledby="formHeading">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Application details</p>
+                    <h2 id="formHeading">Add application</h2>
+                </div>
+                <button class="icon-button" id="closeFormButton" type="button" aria-label="Close form">×</button>
             </div>
 
             <form id="applicationForm">
                 <input type="hidden" id="applicationId">
 
                 <div class="form-grid">
-                    <div class="form-group">
-                        <label for="companyName">Company Name</label>
-                        <input
-                            type="text"
-                            id="companyName"
-                            name="companyName"
-                            placeholder="Example: Microsoft"
-                            required
-                        >
-                    </div>
+                    <label class="control-group">
+                        <span>Company name *</span>
+                        <input id="companyName" type="text" placeholder="Microsoft" required>
+                    </label>
 
-                    <div class="form-group">
-                        <label for="jobTitle">Job Title</label>
-                        <input
-                            type="text"
-                            id="jobTitle"
-                            name="jobTitle"
-                            placeholder="Example: Junior Front End Developer"
-                            required
-                        >
-                    </div>
+                    <label class="control-group">
+                        <span>Job title *</span>
+                        <input id="jobTitle" type="text" placeholder="Junior Front End Developer" required>
+                    </label>
 
-                    <div class="form-group">
-                        <label for="location">Location</label>
-                        <input
-                            type="text"
-                            id="location"
-                            name="location"
-                            placeholder="Example: Atlanta, GA or Remote"
-                        >
-                    </div>
+                    <label class="control-group">
+                        <span>Location</span>
+                        <input id="location" type="text" placeholder="Atlanta, GA or Remote">
+                    </label>
 
-                    <div class="form-group">
-                        <label for="salary">Salary</label>
-                        <input
-                            type="text"
-                            id="salary"
-                            name="salary"
-                            placeholder="Example: $75,000"
-                        >
-                    </div>
+                    <label class="control-group">
+                        <span>Salary</span>
+                        <input id="salary" type="text" placeholder="$75,000">
+                    </label>
 
-                    <div class="form-group">
-                        <label for="applicationDate">Application Date</label>
-                        <input
-                            type="date"
-                            id="applicationDate"
-                            name="applicationDate"
-                            required
-                        >
-                    </div>
+                    <label class="control-group">
+                        <span>Application date *</span>
+                        <input id="applicationDate" type="date" required>
+                    </label>
 
-                    <div class="form-group">
-                        <label for="status">Status</label>
-                        <select id="status" name="status" required>
+                    <label class="control-group">
+                        <span>Status *</span>
+                        <select id="status" required>
                             <option value="Applied">Applied</option>
                             <option value="Interview">Interview</option>
                             <option value="Offer">Offer</option>
                             <option value="Rejected">Rejected</option>
                         </select>
-                    </div>
+                    </label>
 
-                    <div class="form-group full-width">
-                        <label for="jobLink">Job Posting Link</label>
-                        <input
-                            type="url"
-                            id="jobLink"
-                            name="jobLink"
-                            placeholder="https://example.com/job"
-                        >
-                    </div>
+                    <label class="control-group">
+                        <span>Interview date</span>
+                        <input id="interviewDate" type="datetime-local">
+                    </label>
 
-                    <div class="form-group full-width">
-                        <label for="notes">Notes</label>
-                        <textarea
-                            id="notes"
-                            name="notes"
-                            rows="5"
-                            placeholder="Add recruiter names, interview details, follow-up reminders, or anything else."
-                        ></textarea>
-                    </div>
+                    <label class="control-group">
+                        <span>Follow-up date</span>
+                        <input id="followUpDate" type="date">
+                    </label>
+
+                    <label class="control-group full-width">
+                        <span>Job posting link</span>
+                        <input id="jobLink" type="url" placeholder="https://example.com/job">
+                    </label>
+
+                    <label class="control-group full-width">
+                        <span>Notes</span>
+                        <textarea id="notes" rows="5" placeholder="Recruiter name, interview preparation, next steps..."></textarea>
+                    </label>
                 </div>
 
-                <p class="form-message" id="formMessage" aria-live="polite"></p>
+                <p class="form-message" id="formMessage"></p>
 
                 <div class="form-actions">
-                    <button class="secondary-button" id="cancelButton" type="button">
-                        Cancel
-                    </button>
-
-                    <button class="primary-button" type="submit">
-                        Save Application
-                    </button>
+                    <button class="secondary-button" id="cancelButton" type="button">Cancel</button>
+                    <button class="primary-button" type="submit">Save application</button>
                 </div>
             </form>
         </section>
