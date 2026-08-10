@@ -19,7 +19,7 @@ JobTrack helps job seekers organize applications, track interviews, manage follo
 
 # ✨ Features
 
-## Application Management
+## 📋 Application Management
 
 - Add job applications
 - Edit existing applications
@@ -29,7 +29,7 @@ JobTrack helps job seekers organize applications, track interviews, manage follo
 
 ---
 
-## Smart Autocomplete
+## 🔍 Smart Autocomplete
 
 - Company name autocomplete
 - Job title autocomplete
@@ -40,7 +40,7 @@ JobTrack helps job seekers organize applications, track interviews, manage follo
 
 ---
 
-## Dashboard
+## 📊 Dashboard
 
 - Total applications
 - Applied count
@@ -54,7 +54,7 @@ JobTrack helps job seekers organize applications, track interviews, manage follo
 
 ---
 
-## Search & Filtering
+## 🔎 Search & Filtering
 
 - Search by company
 - Search by position
@@ -64,7 +64,7 @@ JobTrack helps job seekers organize applications, track interviews, manage follo
 
 ---
 
-## Interview Tracking
+## 📅 Interview Tracking
 
 - Interview scheduling
 - Interview time tracking
@@ -73,7 +73,7 @@ JobTrack helps job seekers organize applications, track interviews, manage follo
 
 ---
 
-## Analytics
+## 📈 Analytics
 
 - Status chart
 - Monthly application analytics
@@ -83,7 +83,7 @@ JobTrack helps job seekers organize applications, track interviews, manage follo
 
 ---
 
-## Resume Manager
+## 📄 Resume Manager
 
 - Upload resume
 - Download resume
@@ -92,13 +92,13 @@ JobTrack helps job seekers organize applications, track interviews, manage follo
 
 ---
 
-## Export
+## 📤 Export
 
 - Export applications to CSV
 
 ---
 
-## Appearance
+## 🎨 Appearance
 
 - Light mode
 - Dark mode
@@ -106,6 +106,48 @@ JobTrack helps job seekers organize applications, track interviews, manage follo
 - Desktop
 - Tablet
 - Mobile
+
+---
+
+# 📸 Screenshots
+
+## Dashboard
+
+The main dashboard provides a complete overview of your job search, including application metrics, analytics, reminders, and recent activity.
+
+![JobTrack Dashboard](screenshots/dashboard.png)
+
+---
+
+## Add Application
+
+Create new job applications with company and job title autocomplete, interview scheduling, follow up reminders, and required field validation.
+
+![Add Application](screenshots/add-application.png)
+
+---
+
+## Company & Job Title Autocomplete
+
+Built in autocomplete makes entering applications faster while also learning custom companies and job titles over time.
+
+![Autocomplete](screenshots/autocomplete.png)
+
+---
+
+## Analytics Dashboard
+
+Track your progress with visual analytics, response rates, monthly applications, and application statistics.
+
+![Analytics](screenshots/analytics.png)
+
+---
+
+## Mobile Experience
+
+JobTrack is fully responsive and optimized for desktop, tablet, and mobile devices.
+
+![Mobile View](screenshots/mobile-view.png)
 
 ---
 
@@ -137,6 +179,13 @@ No information is transmitted to external servers.
 ```text
 job-application-tracker/
 │
+├── screenshots/
+│   ├── dashboard.png
+│   ├── add-application.png
+│   ├── autocomplete.png
+│   ├── analytics.png
+│   └── mobile-view.png
+│
 ├── index.html
 ├── style.css
 ├── script.js
@@ -159,7 +208,7 @@ Open the project folder.
 
 Open **index.html** in your browser.
 
-Or launch the project using the Live Server extension in Visual Studio Code.
+Or launch the project using the **Live Server** extension in Visual Studio Code for the best development experience.
 
 ---
 
@@ -173,12 +222,14 @@ Developing JobTrack strengthened my understanding of:
 - Responsive web design
 - LocalStorage
 - IndexedDB
-- JavaScript modules
-- Autocomplete systems
-- Dashboard analytics
 - Search and filtering
+- Custom autocomplete systems
+- Dashboard analytics
+- JavaScript project organization
 - Git and GitHub workflows
-- Organizing larger JavaScript projects
+- Creating user friendly interfaces
+
+Building this project taught me how to organize a larger JavaScript application while focusing on usability, maintainability, and responsive design.
 
 ---
 
@@ -206,14 +257,14 @@ Planned improvements include:
 
 ## Version 2.0
 
-- SaaS style interface redesign
+- Modern SaaS style interface redesign
 - Company autocomplete
 - Job title autocomplete
 - Required field validation
 - Dashboard improvements
-- Better analytics
-- Improved responsive design
-- Code organization improvements
+- Analytics enhancements
+- Responsive UI improvements
+- Cleaner project organization
 
 ---
 
@@ -221,7 +272,7 @@ Planned improvements include:
 
 - CRUD application management
 - Dashboard
-- Charts
+- Analytics
 - Resume manager
 - CSV export
 - Theme switching
@@ -233,18 +284,22 @@ Planned improvements include:
 
 **Kenneth Morgan**
 
-**GitHub**
+### GitHub
 
 https://github.com/KennethKnowsIT
 
-**LinkedIn**
+### LinkedIn
 
 https://www.linkedin.com/in/kenneth-morgan-8a928017a/
 
-**Live Demo**
+### Live Demo
 
 https://kennethknowsit.github.io/job-application-tracker/
 
 ---
 
-⭐ If you found this project interesting, consider starring the repository.
+## ⭐ Support
+
+If you found this project interesting or helpful, consider giving it a ⭐ on GitHub.
+
+Feedback, suggestions, and contributions are always welcome.
