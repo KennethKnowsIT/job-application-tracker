@@ -45,7 +45,8 @@
             </div>
         </aside>
 
-        <main class="main-content">
+        <!-- Main application workspace: dashboard, analytics, and documents. -->
+    <main class="main-content">
             <header class="topbar">
                 <div>
                     <p class="eyebrow">Career workspace</p>
@@ -93,6 +94,10 @@
                         <div class="metric-icon">×</div>
                         <div><p>Rejected</p><strong id="rejectedCount">0</strong></div>
                     </article>
+                    <article class="metric-card">
+                        <div class="metric-icon">7d</div>
+                        <div><p>This week</p><strong id="weekCount">0</strong></div>
+                    </article>
                 </section>
 
                 <section class="dashboard-grid">
@@ -115,6 +120,17 @@
                         </div>
                         <div id="reminderList" class="reminder-list"></div>
                     </div>
+                </section>
+
+                <!-- Recent actions make the dashboard feel like a living workspace. -->
+                <section class="glass-panel activity-panel">
+                    <div class="section-heading">
+                        <div>
+                            <p class="eyebrow">Timeline</p>
+                            <h2>Recent activity</h2>
+                        </div>
+                    </div>
+                    <div id="activityList" class="activity-list"></div>
                 </section>
 
                 <section class="glass-panel applications-panel">
@@ -140,6 +156,30 @@
                                 <option value="Interview">Interview</option>
                                 <option value="Offer">Offer</option>
                                 <option value="Rejected">Rejected</option>
+                            </select>
+                        </label>
+
+                        <label class="control-group filter-control">
+                            <span>Priority</span>
+                            <select id="priorityFilter">
+                                <option value="all">All priorities</option>
+                                <option value="High">High</option>
+                                <option value="Medium">Medium</option>
+                                <option value="Low">Low</option>
+                            </select>
+                        </label>
+
+                        <label class="control-group filter-control">
+                            <span>Source</span>
+                            <select id="sourceFilter">
+                                <option value="all">All sources</option>
+                                <option value="LinkedIn">LinkedIn</option>
+                                <option value="Indeed">Indeed</option>
+                                <option value="Handshake">Handshake</option>
+                                <option value="Company Website">Company Website</option>
+                                <option value="Referral">Referral</option>
+                                <option value="Recruiter">Recruiter</option>
+                                <option value="Other">Other</option>
                             </select>
                         </label>
                     </div>
@@ -175,6 +215,18 @@
                         <strong id="monthCount">0</strong>
                         <p>Applications submitted this month.</p>
                     </article>
+                    <article class="glass-panel insight-card">
+                        <p class="eyebrow">Conversion</p>
+                        <h2>Response rate</h2>
+                        <strong id="responseRate">0%</strong>
+                        <p>Applications that progressed beyond the initial applied stage.</p>
+                    </article>
+                    <article class="glass-panel insight-card">
+                        <p class="eyebrow">Timing</p>
+                        <h2>Average age</h2>
+                        <strong id="averageAge">0d</strong>
+                        <p>Average number of days since your applications were submitted.</p>
+                    </article>
                 </div>
 
                 <div class="glass-panel chart-panel analytics-chart">
@@ -195,6 +247,16 @@
                         </div>
                     </div>
                     <div id="companyBreakdown" class="company-breakdown"></div>
+                </div>
+
+                <div class="glass-panel table-panel source-panel">
+                    <div class="section-heading">
+                        <div>
+                            <p class="eyebrow">Discovery</p>
+                            <h2>Where applications come from</h2>
+                        </div>
+                    </div>
+                    <div id="sourceBreakdown" class="company-breakdown"></div>
                 </div>
             </section>
 
@@ -228,6 +290,7 @@
     <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
     <div class="modal-backdrop hidden" id="applicationModal">
+        <!-- Modal form used to add or edit a job application. -->
         <section class="modal glass-panel" role="dialog" aria-modal="true" aria-labelledby="formHeading">
             <div class="section-heading">
                 <div>
@@ -241,10 +304,29 @@
                 <input type="hidden" id="applicationId">
 
                 <div class="form-grid">
-                    <label class="control-group">
-                        <span>Company name *</span>
-                        <input id="companyName" type="text" placeholder="Microsoft" required>
-                    </label>
+                    <div class="control-group company-autocomplete">
+                        <label for="companyName">Company name *</label>
+                        <!-- Custom autocomplete: type a few letters, then use mouse or arrow keys + Enter. -->
+                        <input
+                            id="companyName"
+                            type="text"
+                            placeholder="Start typing a company"
+                            autocomplete="off"
+                            role="combobox"
+                            aria-autocomplete="list"
+                            aria-expanded="false"
+                            aria-controls="companySuggestions"
+                            aria-activedescendant=""
+                            required
+                        >
+                        <div
+                            id="companySuggestions"
+                            class="company-suggestions hidden"
+                            role="listbox"
+                            aria-label="Company suggestions"
+                        ></div>
+                        <small class="field-hint">Start typing to search built-in companies and companies you have saved before.</small>
+                    </div>
 
                     <label class="control-group">
                         <span>Job title *</span>
@@ -277,10 +359,66 @@
                     </label>
 
                     <label class="control-group">
-                        <span>Interview date</span>
-                        <input id="interviewDate" type="datetime-local">
+                        <span>Priority</span>
+                        <select id="priority">
+                            <option value="High">High</option>
+                            <option value="Medium" selected>Medium</option>
+                            <option value="Low">Low</option>
+                        </select>
                     </label>
 
+                    <label class="control-group">
+                        <span>Job source</span>
+                        <select id="jobSource">
+                            <option value="LinkedIn">LinkedIn</option>
+                            <option value="Indeed">Indeed</option>
+                            <option value="Handshake">Handshake</option>
+                            <option value="Company Website">Company Website</option>
+                            <option value="Referral">Referral</option>
+                            <option value="Recruiter">Recruiter</option>
+                            <option value="Other" selected>Other</option>
+                        </select>
+                    </label>
+
+                    <!-- Interview date and time are separate so each is easier to select. -->
+                    <label class="control-group">
+                        <span>Interview date</span>
+                        <input id="interviewDate" type="date">
+                    </label>
+
+                    <label class="control-group">
+                        <span>Interview time</span>
+                        <select id="interviewTime">
+                            <option value="">Select a time</option>
+                            <option value="08:00">8:00 AM</option>
+                            <option value="08:30">8:30 AM</option>
+                            <option value="09:00">9:00 AM</option>
+                            <option value="09:30">9:30 AM</option>
+                            <option value="10:00">10:00 AM</option>
+                            <option value="10:30">10:30 AM</option>
+                            <option value="11:00">11:00 AM</option>
+                            <option value="11:30">11:30 AM</option>
+                            <option value="12:00">12:00 PM</option>
+                            <option value="12:30">12:30 PM</option>
+                            <option value="13:00">1:00 PM</option>
+                            <option value="13:30">1:30 PM</option>
+                            <option value="14:00">2:00 PM</option>
+                            <option value="14:30">2:30 PM</option>
+                            <option value="15:00">3:00 PM</option>
+                            <option value="15:30">3:30 PM</option>
+                            <option value="16:00">4:00 PM</option>
+                            <option value="16:30">4:30 PM</option>
+                            <option value="17:00">5:00 PM</option>
+                            <option value="17:30">5:30 PM</option>
+                            <option value="18:00">6:00 PM</option>
+                            <option value="18:30">6:30 PM</option>
+                            <option value="19:00">7:00 PM</option>
+                            <option value="19:30">7:30 PM</option>
+                            <option value="20:00">8:00 PM</option>
+                        </select>
+                    </label>
+
+                    <!-- Follow-up currently needs only a date. -->
                     <label class="control-group">
                         <span>Follow-up date</span>
                         <input id="followUpDate" type="date">
@@ -307,6 +445,8 @@
         </section>
     </div>
 
+    <!-- Company names load first so script.js can use them for autocomplete. -->
+    <script src="companies.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

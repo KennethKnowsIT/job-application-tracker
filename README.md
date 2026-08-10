@@ -59,3 +59,16 @@ Open `index.html` directly or use the Live Server extension in Visual Studio Cod
 - Multi-device synchronization
 - Password reset and account management
 - Automated email reminders
+
+## Company autocomplete
+
+JobTrack includes a custom company-name autocomplete. The built-in suggestion database lives in `companies.js`, organized by employer category so it is easy to review or edit. The autocomplete also learns company names from applications saved in the browser.
+
+Autocomplete controls:
+- Start typing to filter company names.
+- Use the mouse to select a suggestion.
+- Use Up/Down Arrow keys to move through suggestions.
+- Press Enter to select the highlighted company.
+- Press Escape to close the suggestion list.
+
+You can still type and save a company that is not in the built-in list.

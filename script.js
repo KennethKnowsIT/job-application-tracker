@@ -2,9 +2,12 @@ const STORAGE_KEY = "jobTrackerApplications";
 const THEME_KEY = "jobTrackerTheme";
 const RESUME_DB = "jobTrackerFiles";
 const RESUME_STORE = "resumes";
+const ACTIVITY_KEY = "jobTrackerActivity";
 
+// Small helper so we can grab an HTML element by its id.
 const $ = (id) => document.getElementById(id);
 
+// Frequently used page elements.
 const elements = {
     modal: $("applicationModal"),
     form: $("applicationForm"),
@@ -15,10 +18,13 @@ const elements = {
     resultCount: $("resultCount"),
     search: $("searchInput"),
     filter: $("statusFilter"),
+    priorityFilter: $("priorityFilter"),
+    sourceFilter: $("sourceFilter"),
     toast: $("toast"),
     pageTitle: $("pageTitle")
 };
 
+// Form fields used when adding or editing an application.
 const fields = {
     id: $("applicationId"),
     company: $("companyName"),
@@ -27,21 +33,177 @@ const fields = {
     salary: $("salary"),
     date: $("applicationDate"),
     status: $("status"),
+    priority: $("priority"),
+    source: $("jobSource"),
     interviewDate: $("interviewDate"),
+    interviewTime: $("interviewTime"),
     followUpDate: $("followUpDate"),
     link: $("jobLink"),
     notes: $("notes")
 };
 
 let applications = loadApplications();
+let activityLog = loadActivity();
 let toastTimer;
 
+// ---------------- COMPANY AUTOCOMPLETE ----------------
+// companies.js owns the large built-in company list. This file adds companies
+// from the user's saved applications and controls the visible suggestion menu.
+let companyMatches = [];
+let activeCompanyIndex = -1;
+
+function getCompanyDatabase() {
+    // Learn from the user's own applications, even when a company is not built in.
+    const savedCompanies = applications
+        .map(app => (app.company || "").trim())
+        .filter(Boolean);
+
+    const builtInCompanies = Array.isArray(window.JOBTRACK_COMPANIES)
+        ? window.JOBTRACK_COMPANIES
+        : [];
+
+    // Remove duplicates without caring about capitalization.
+    const unique = new Map();
+    [...savedCompanies, ...builtInCompanies].forEach(company => {
+        const key = company.toLowerCase();
+        if (!unique.has(key)) unique.set(key, company);
+    });
+
+    return [...unique.values()].sort((a, b) => a.localeCompare(b));
+}
+
+function findCompanyMatches(query) {
+    const term = query.trim().toLowerCase();
+    if (!term) return [];
+
+    const database = getCompanyDatabase();
+
+    // Companies that START with the typed text appear before companies that only contain it.
+    const startsWith = database.filter(company => company.toLowerCase().startsWith(term));
+    const contains = database.filter(company => {
+        const name = company.toLowerCase();
+        return !name.startsWith(term) && name.includes(term);
+    });
+
+    return [...startsWith, ...contains].slice(0, 10);
+}
+
+function closeCompanySuggestions() {
+    const list = $("companySuggestions");
+    if (!list) return;
+    list.classList.add("hidden");
+    list.innerHTML = "";
+    fields.company.setAttribute("aria-expanded", "false");
+    fields.company.setAttribute("aria-activedescendant", "");
+    companyMatches = [];
+    activeCompanyIndex = -1;
+}
+
+function renderCompanySuggestions() {
+    const list = $("companySuggestions");
+    if (!list) return;
+
+    companyMatches = findCompanyMatches(fields.company.value);
+    activeCompanyIndex = -1;
+
+    if (!companyMatches.length) {
+        closeCompanySuggestions();
+        return;
+    }
+
+    list.innerHTML = companyMatches.map((company, index) => `
+        <button
+            class="company-suggestion"
+            id="company-option-${index}"
+            type="button"
+            role="option"
+            data-company-index="${index}"
+            aria-selected="false"
+        >
+            ${escapeHTML(company)}
+        </button>
+    `).join("");
+
+    list.classList.remove("hidden");
+    fields.company.setAttribute("aria-expanded", "true");
+}
+
+function setActiveCompany(index) {
+    const options = [...document.querySelectorAll(".company-suggestion")];
+    if (!options.length) return;
+
+    activeCompanyIndex = (index + options.length) % options.length;
+
+    options.forEach((option, optionIndex) => {
+        const active = optionIndex === activeCompanyIndex;
+        option.classList.toggle("active", active);
+        option.setAttribute("aria-selected", String(active));
+    });
+
+    const activeOption = options[activeCompanyIndex];
+    fields.company.setAttribute("aria-activedescendant", activeOption.id);
+    activeOption.scrollIntoView({ block: "nearest" });
+}
+
+function chooseCompany(index) {
+    const company = companyMatches[index];
+    if (!company) return;
+    fields.company.value = company;
+    closeCompanySuggestions();
+    fields.company.focus();
+}
+
+function handleCompanyKeydown(event) {
+    if (event.key === "ArrowDown") {
+        event.preventDefault();
+        if (!companyMatches.length) renderCompanySuggestions();
+        if (companyMatches.length) setActiveCompany(activeCompanyIndex + 1);
+    } else if (event.key === "ArrowUp") {
+        event.preventDefault();
+        if (!companyMatches.length) renderCompanySuggestions();
+        if (companyMatches.length) setActiveCompany(activeCompanyIndex - 1);
+    } else if (event.key === "Enter" && activeCompanyIndex >= 0) {
+        event.preventDefault();
+        chooseCompany(activeCompanyIndex);
+    } else if (event.key === "Escape") {
+        closeCompanySuggestions();
+    }
+}
+
+function handleCompanySuggestionClick(event) {
+    const option = event.target.closest("[data-company-index]");
+    if (!option) return;
+    chooseCompany(Number(option.dataset.companyIndex));
+}
+
+function loadActivity() {
+    try {
+        return JSON.parse(localStorage.getItem(ACTIVITY_KEY) || "[]");
+    } catch (error) {
+        console.error(error);
+        return [];
+    }
+}
+
+function saveActivity() {
+    localStorage.setItem(ACTIVITY_KEY, JSON.stringify(activityLog.slice(0, 30)));
+}
+
+function logActivity(message) {
+    activityLog.unshift({ id: createId(), message, time: new Date().toISOString() });
+    activityLog = activityLog.slice(0, 30);
+    saveActivity();
+}
+
+// Load saved applications from the browser's localStorage.
 function loadApplications() {
     try {
         const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
         return saved.map(item => ({
             interviewDate: "",
             followUpDate: "",
+            priority: "Medium",
+            source: "Other",
             ...item,
             company: item.company || item.companyName || "",
             title: item.title || item.jobTitle || ""
@@ -52,6 +214,7 @@ function loadApplications() {
     }
 }
 
+// Save the current application list so it survives a page refresh.
 function saveApplications() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(applications));
 }
@@ -72,28 +235,51 @@ function todayISO() {
 }
 
 function openForm(application = null) {
+    // Start with a clean form every time the modal opens.
     elements.form.reset();
     elements.formMessage.textContent = "";
     fields.id.value = "";
 
     if (application) {
         elements.formHeading.textContent = "Edit application";
-        Object.keys(fields).forEach(key => {
-            if (key !== "id") fields[key].value = application[key] || "";
-        });
+
+        // Fill the normal fields from the saved application.
+        fields.company.value = application.company || "";
+        fields.title.value = application.title || "";
+        fields.location.value = application.location || "";
+        fields.salary.value = application.salary || "";
+        fields.date.value = application.date || "";
+        fields.status.value = application.status || "Applied";
+        fields.priority.value = application.priority || "Medium";
+        fields.source.value = application.source || "Other";
+        fields.followUpDate.value = application.followUpDate || "";
+        fields.link.value = application.link || "";
+        fields.notes.value = application.notes || "";
+
+        // interviewDate is stored as YYYY-MM-DDTHH:MM. Split it back
+        // into the separate date box and time dropdown while editing.
+        if (application.interviewDate) {
+            const [interviewDate, interviewTime = ""] = application.interviewDate.split("T");
+            fields.interviewDate.value = interviewDate;
+            fields.interviewTime.value = interviewTime.slice(0, 5);
+        }
+
         fields.id.value = application.id;
     } else {
         elements.formHeading.textContent = "Add application";
         fields.date.value = todayISO();
         fields.status.value = "Applied";
+        fields.priority.value = "Medium";
+        fields.source.value = "Other";
     }
 
     elements.modal.classList.remove("hidden");
     document.body.classList.add("modal-open");
-    setTimeout(() => fields.company.focus(), 20);
+    fields.company.focus();
 }
 
 function closeForm() {
+    closeCompanySuggestions();
     elements.modal.classList.add("hidden");
     document.body.classList.remove("modal-open");
 }
@@ -159,10 +345,14 @@ function dueText(application) {
 function getFiltered() {
     const term = elements.search.value.trim().toLowerCase();
     const status = elements.filter.value;
+    const priority = elements.priorityFilter.value;
+    const source = elements.sourceFilter.value;
     return [...applications]
         .filter(app =>
-            (!term || [app.company, app.title, app.location].some(value => (value || "").toLowerCase().includes(term))) &&
-            (status === "all" || app.status === status)
+            (!term || [app.company, app.title, app.location, app.source].some(value => (value || "").toLowerCase().includes(term))) &&
+            (status === "all" || app.status === status) &&
+            (priority === "all" || app.priority === priority) &&
+            (source === "all" || app.source === source)
         )
         .sort((a, b) => new Date(b.date) - new Date(a.date));
 }
@@ -188,13 +378,17 @@ function renderApplications() {
                 <span class="status-badge status-${app.status.toLowerCase()}">${escapeHTML(app.status)}</span>
             </div>
 
-            ${due ? `<span class="due-badge">${escapeHTML(due)}</span>` : ""}
+            <div class="card-tags">
+                <span class="priority-badge priority-${(app.priority || "Medium").toLowerCase()}">${escapeHTML(app.priority || "Medium")} priority</span>
+                <span class="source-badge">${escapeHTML(app.source || "Other")}</span>
+                ${due ? `<span class="due-badge">${escapeHTML(due)}</span>` : ""}
+            </div>
 
             <div class="card-details">
                 <p><strong>Location:</strong> ${escapeHTML(app.location || "Not provided")}</p>
                 <p><strong>Salary:</strong> ${escapeHTML(app.salary || "Not provided")}</p>
                 <p><strong>Applied:</strong> ${formatDate(app.date)}</p>
-                ${app.interviewDate ? `<p><strong>Interview:</strong> ${formatDate(app.interviewDate, true)}</p>` : ""}
+                ${app.interviewDate ? `<p><strong>Interview:</strong> ${formatDate(app.interviewDate, app.interviewDate.includes("T"))}</p>` : ""}
                 ${app.followUpDate ? `<p><strong>Follow-up:</strong> ${formatDate(app.followUpDate)}</p>` : ""}
                 ${app.link ? `<p><a class="job-link" href="${escapeHTML(app.link)}" target="_blank" rel="noopener noreferrer">View posting</a></p>` : ""}
             </div>
@@ -215,6 +409,7 @@ function renderApplications() {
 function renderAllDataViews() {
     renderMetrics();
     renderReminders();
+    renderRecentActivity();
     renderCalendar();
     renderStatusChart();
     renderAnalytics();
@@ -230,6 +425,15 @@ function renderMetrics() {
     $("interviewCount").textContent = countStatus("Interview");
     $("offerCount").textContent = countStatus("Offer");
     $("rejectedCount").textContent = countStatus("Rejected");
+
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setHours(0, 0, 0, 0);
+    startOfWeek.setDate(now.getDate() - now.getDay());
+    $("weekCount").textContent = applications.filter(app => {
+        const date = new Date(`${app.date}T00:00:00`);
+        return date >= startOfWeek && date <= now;
+    }).length;
 }
 
 function upcomingItems() {
@@ -262,6 +466,37 @@ function renderReminders() {
             </div>
         </div>
     `).join("");
+}
+
+function renderRecentActivity() {
+    const container = $("activityList");
+    if (!container) return;
+
+    if (!activityLog.length) {
+        container.innerHTML = `<p class="muted-text">Your latest adds, edits, and status changes will appear here.</p>`;
+        return;
+    }
+
+    container.innerHTML = activityLog.slice(0, 6).map(item => `
+        <div class="activity-item">
+            <div>
+                <strong>${escapeHTML(item.message)}</strong>
+                <small>${formatRelativeTime(item.time)}</small>
+            </div>
+        </div>
+    `).join("");
+}
+
+function formatRelativeTime(value) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "Recently";
+    const minutes = Math.max(0, Math.round((Date.now() - date.getTime()) / 60000));
+    if (minutes < 1) return "Just now";
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.round(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.round(hours / 24);
+    return `${days}d ago`;
 }
 
 function renderCalendar() {
@@ -412,6 +647,8 @@ function renderAnalytics() {
     const total = applications.length;
     $("interviewRate").textContent = `${total ? Math.round((countStatus("Interview") / total) * 100) : 0}%`;
     $("offerRate").textContent = `${total ? Math.round((countStatus("Offer") / total) * 100) : 0}%`;
+    const progressed = applications.filter(app => app.status !== "Applied").length;
+    $("responseRate").textContent = `${total ? Math.round((progressed / total) * 100) : 0}%`;
 
     const now = new Date();
     $("monthCount").textContent = applications.filter(app => {
@@ -419,8 +656,15 @@ function renderAnalytics() {
         return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
     }).length;
 
+    const ages = applications.map(app => {
+        const applied = new Date(`${app.date}T00:00:00`);
+        return Math.max(0, Math.floor((now - applied) / 86400000));
+    }).filter(Number.isFinite);
+    $("averageAge").textContent = `${ages.length ? Math.round(ages.reduce((sum, days) => sum + days, 0) / ages.length) : 0}d`;
+
     renderTimelineChart();
     renderCompanyBreakdown();
+    renderSourceBreakdown();
 }
 
 function renderCompanyBreakdown() {
@@ -439,6 +683,24 @@ function renderCompanyBreakdown() {
     `).join("") : `<p class="muted-text">Add applications to see your company breakdown.</p>`;
 }
 
+function renderSourceBreakdown() {
+    const counts = applications.reduce((acc, app) => {
+        const source = app.source || "Other";
+        acc[source] = (acc[source] || 0) + 1;
+        return acc;
+    }, {});
+    const rows = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    const max = Math.max(1, ...rows.map(([, count]) => count));
+    $("sourceBreakdown").innerHTML = rows.length ? rows.map(([source, count]) => `
+        <div class="company-row">
+            <strong>${escapeHTML(source)}</strong>
+            <div class="company-bar-track"><div class="company-bar" style="width:${(count / max) * 100}%"></div></div>
+            <span>${count}</span>
+        </div>
+    `).join("") : `<p class="muted-text">Choose a job source when adding applications to see this breakdown.</p>`;
+}
+
+// Validate the form, build the application object, and save it.
 function handleSubmit(event) {
     event.preventDefault();
     const company = fields.company.value.trim();
@@ -450,6 +712,15 @@ function handleSubmit(event) {
         return;
     }
 
+    // Combine the separate interview date and time into one value for storage.
+    // Example: 2026-08-15 + 14:30 becomes 2026-08-15T14:30.
+    let interviewDate = "";
+    if (fields.interviewDate.value) {
+        interviewDate = fields.interviewTime.value
+            ? `${fields.interviewDate.value}T${fields.interviewTime.value}`
+            : fields.interviewDate.value;
+    }
+
     const application = {
         id: fields.id.value || createId(),
         company,
@@ -458,15 +729,28 @@ function handleSubmit(event) {
         salary: fields.salary.value.trim(),
         date,
         status: fields.status.value,
-        interviewDate: fields.interviewDate.value,
+        priority: fields.priority.value,
+        source: fields.source.value,
+        interviewDate,
         followUpDate: fields.followUpDate.value,
         link: fields.link.value.trim(),
         notes: fields.notes.value.trim()
     };
 
     const index = applications.findIndex(app => app.id === application.id);
+    const previous = index >= 0 ? applications[index] : null;
     if (index >= 0) applications[index] = application;
     else applications.push(application);
+
+    if (previous) {
+        if (previous.status !== application.status) {
+            logActivity(`${application.company}: ${previous.status} → ${application.status}`);
+        } else {
+            logActivity(`Updated ${application.company} · ${application.title}`);
+        }
+    } else {
+        logActivity(`Added ${application.company} · ${application.title}`);
+    }
 
     saveApplications();
     renderApplications();
@@ -474,6 +758,7 @@ function handleSubmit(event) {
     showToast(index >= 0 ? "Application updated." : "Application added.");
 }
 
+// Handles Edit and Delete buttons on application cards.
 function handleCardAction(event) {
     const button = event.target.closest("[data-action]");
     if (!button) return;
@@ -483,21 +768,23 @@ function handleCardAction(event) {
     if (button.dataset.action === "edit") openForm(app);
     if (button.dataset.action === "delete" && confirm(`Delete ${app.company}?`)) {
         applications = applications.filter(item => item.id !== app.id);
+        logActivity(`Deleted ${app.company} · ${app.title}`);
         saveApplications();
         renderApplications();
         showToast("Application deleted.");
     }
 }
 
+// Export all saved applications as a CSV spreadsheet file.
 function exportCSV() {
     if (!applications.length) {
         showToast("Add an application before exporting.");
         return;
     }
 
-    const headers = ["Company","Job Title","Location","Salary","Application Date","Status","Interview Date","Follow-up Date","Job Link","Notes"];
+    const headers = ["Company","Job Title","Location","Salary","Application Date","Status","Priority","Source","Interview Date","Follow-up Date","Job Link","Notes"];
     const rows = applications.map(app => [
-        app.company, app.title, app.location, app.salary, app.date, app.status,
+        app.company, app.title, app.location, app.salary, app.date, app.status, app.priority, app.source,
         app.interviewDate, app.followUpDate, app.link, app.notes
     ]);
     const csv = [headers, ...rows].map(row => row.map(value => `"${String(value || "").replaceAll('"','""')}"`).join(",")).join("\n");
@@ -511,6 +798,7 @@ function exportCSV() {
     showToast("CSV exported.");
 }
 
+// Adds sample records so the dashboard can be tested quickly.
 function loadDemoData() {
     if (applications.length && !confirm("Add demo entries to your existing applications?")) return;
     const now = new Date();
@@ -518,13 +806,14 @@ function loadDemoData() {
     const dateTimeOffset = days => `${dateOffset(days)}T10:30`;
 
     const demos = [
-        { company: "Microsoft", title: "Junior Front End Developer", location: "Atlanta, GA", salary: "$82,000", date: dateOffset(-12), status: "Interview", interviewDate: dateTimeOffset(2), followUpDate: dateOffset(4), link: "", notes: "Review React fundamentals and prepare STAR stories." },
-        { company: "Lockheed Martin", title: "Cybersecurity Analyst I", location: "Marietta, GA", salary: "$78,000", date: dateOffset(-8), status: "Applied", interviewDate: "", followUpDate: dateOffset(1), link: "", notes: "Veteran-friendly role. Follow up with recruiter." },
-        { company: "Mailchimp", title: "Web Developer", location: "Atlanta, GA", salary: "$76,000", date: dateOffset(-21), status: "Rejected", interviewDate: "", followUpDate: "", link: "", notes: "Save the posting to compare required skills." },
-        { company: "Home Depot", title: "Software Engineer Associate", location: "Remote", salary: "$88,000", date: dateOffset(-3), status: "Offer", interviewDate: "", followUpDate: dateOffset(3), link: "", notes: "Review offer details and benefits." }
+        { company: "Microsoft", priority: "High", source: "LinkedIn", title: "Junior Front End Developer", location: "Atlanta, GA", salary: "$82,000", date: dateOffset(-12), status: "Interview", interviewDate: dateTimeOffset(2), followUpDate: dateOffset(4), link: "", notes: "Review React fundamentals and prepare STAR stories." },
+        { company: "Lockheed Martin", priority: "High", source: "Company Website", title: "Cybersecurity Analyst I", location: "Marietta, GA", salary: "$78,000", date: dateOffset(-8), status: "Applied", interviewDate: "", followUpDate: dateOffset(1), link: "", notes: "Veteran-friendly role. Follow up with recruiter." },
+        { company: "Mailchimp", priority: "Medium", source: "LinkedIn", title: "Web Developer", location: "Atlanta, GA", salary: "$76,000", date: dateOffset(-21), status: "Rejected", interviewDate: "", followUpDate: "", link: "", notes: "Save the posting to compare required skills." },
+        { company: "Home Depot", priority: "High", source: "Referral", title: "Software Engineer Associate", location: "Remote", salary: "$88,000", date: dateOffset(-3), status: "Offer", interviewDate: "", followUpDate: dateOffset(3), link: "", notes: "Review offer details and benefits." }
     ].map(item => ({ id: createId(), ...item }));
 
     applications.push(...demos);
+    logActivity(`Loaded ${demos.length} demo applications`);
     saveApplications();
     renderApplications();
     showToast("Demo data loaded.");
@@ -661,9 +950,23 @@ document.querySelectorAll(".nav-button").forEach(button => {
 $("closeFormButton").addEventListener("click", closeForm);
 $("cancelButton").addEventListener("click", closeForm);
 elements.form.addEventListener("submit", handleSubmit);
+
+// Company autocomplete listeners.
+fields.company.addEventListener("input", renderCompanySuggestions);
+fields.company.addEventListener("focus", () => {
+    if (fields.company.value.trim()) renderCompanySuggestions();
+});
+fields.company.addEventListener("keydown", handleCompanyKeydown);
+$("companySuggestions").addEventListener("click", handleCompanySuggestionClick);
+fields.company.addEventListener("blur", () => {
+    // Small delay allows a mouse click on a suggestion to register first.
+    setTimeout(closeCompanySuggestions, 120);
+});
 elements.grid.addEventListener("click", handleCardAction);
 elements.search.addEventListener("input", renderApplications);
 elements.filter.addEventListener("change", renderApplications);
+elements.priorityFilter.addEventListener("change", renderApplications);
+elements.sourceFilter.addEventListener("change", renderApplications);
 $("exportButton").addEventListener("click", exportCSV);
 $("loadDemoButton").addEventListener("click", loadDemoData);
 $("themeToggle").addEventListener("click", () => applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark"));
