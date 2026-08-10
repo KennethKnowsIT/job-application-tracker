@@ -559,20 +559,23 @@ body.modal-open { overflow: hidden; }
     .stacked-on-mobile { align-items: flex-start; flex-direction: column; gap: 6px; }
 }
 
-/* ---------------- Company autocomplete ---------------- */
+/* ---------------- Company + job-title autocomplete ---------------- */
 /* The wrapper anchors the suggestion menu directly under the company input. */
-.company-autocomplete {
+.company-autocomplete,
+.job-title-autocomplete {
     position: relative;
 }
 
-.company-autocomplete > label {
+.company-autocomplete > label,
+.job-title-autocomplete > label {
     font-size: 0.86rem;
     font-weight: 700;
     color: var(--text);
 }
 
 /* Custom dropdown shown while the user types a company name. */
-.company-suggestions {
+.company-suggestions,
+.job-title-suggestions {
     position: absolute;
     z-index: 40;
     top: calc(100% - 18px);
@@ -587,7 +590,8 @@ body.modal-open { overflow: hidden; }
     box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
 }
 
-.company-suggestion {
+.company-suggestion,
+.job-title-suggestion {
     display: block;
     width: 100%;
     padding: 10px 12px;
@@ -601,7 +605,9 @@ body.modal-open { overflow: hidden; }
 }
 
 .company-suggestion:hover,
-.company-suggestion.active {
+.company-suggestion.active,
+.job-title-suggestion:hover,
+.job-title-suggestion.active {
     background: var(--primary-soft);
     color: var(--primary);
 }

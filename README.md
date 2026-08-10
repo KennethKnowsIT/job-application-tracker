@@ -62,7 +62,8 @@ Open `index.html` directly or use the Live Server extension in Visual Studio Cod
 
 ## Company autocomplete
 
-JobTrack includes a custom company-name autocomplete. The built-in suggestion database lives in `companies.js`, organized by employer category so it is easy to review or edit. The autocomplete also learns company names from applications saved in the browser.
+JobTrack includes a custom company-name autocomplete. The built-in suggestion database lives in `companies.js
+- `job_titles.js` - built-in job-title autocomplete database`, organized by employer category so it is easy to review or edit. The autocomplete also learns company names from applications saved in the browser.
 
 Autocomplete controls:
 - Start typing to filter company names.
@@ -72,3 +73,10 @@ Autocomplete controls:
 - Press Escape to close the suggestion list.
 
 You can still type and save a company that is not in the built-in list.
+
+
+## Job title autocomplete
+JobTrack now includes a separate `job_titles.js` database with hundreds of common job titles. The custom autocomplete supports mouse selection, Up/Down arrow keys, Enter, and Escape. Titles from applications you save are learned automatically, so custom titles are suggested later too.
+
+## Required fields
+Every form field marked with `*` must be completed before an application can be saved. JobTrack highlights the first missing required field and displays a reminder message in the form.

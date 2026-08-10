@@ -176,6 +176,135 @@ function handleCompanySuggestionClick(event) {
     chooseCompany(Number(option.dataset.companyIndex));
 }
 
+
+// ---------------- JOB TITLE AUTOCOMPLETE ----------------
+// job_titles.js contains common titles. We also learn titles from saved applications
+// so a title only has to be typed once before JobTrack can suggest it later.
+let jobTitleMatches = [];
+let activeJobTitleIndex = -1;
+
+function getJobTitleDatabase() {
+    const savedTitles = applications
+        .map(app => (app.title || "").trim())
+        .filter(Boolean);
+
+    const builtInTitles = Array.isArray(window.JOBTRACK_JOB_TITLES)
+        ? window.JOBTRACK_JOB_TITLES
+        : [];
+
+    // Keep one copy of each title, ignoring capitalization differences.
+    const unique = new Map();
+    [...savedTitles, ...builtInTitles].forEach(title => {
+        const key = title.toLowerCase();
+        if (!unique.has(key)) unique.set(key, title);
+    });
+
+    return [...unique.values()].sort((a, b) => a.localeCompare(b));
+}
+
+function findJobTitleMatches(query) {
+    const term = query.trim().toLowerCase();
+    if (!term) return [];
+
+    const database = getJobTitleDatabase();
+    const startsWith = database.filter(title => title.toLowerCase().startsWith(term));
+    const contains = database.filter(title => {
+        const name = title.toLowerCase();
+        return !name.startsWith(term) && name.includes(term);
+    });
+
+    // Limit the menu so it stays quick and easy to scan.
+    return [...startsWith, ...contains].slice(0, 10);
+}
+
+function closeJobTitleSuggestions() {
+    const list = $("jobTitleSuggestions");
+    if (!list) return;
+    list.classList.add("hidden");
+    list.innerHTML = "";
+    fields.title.setAttribute("aria-expanded", "false");
+    fields.title.setAttribute("aria-activedescendant", "");
+    jobTitleMatches = [];
+    activeJobTitleIndex = -1;
+}
+
+function renderJobTitleSuggestions() {
+    const list = $("jobTitleSuggestions");
+    if (!list) return;
+
+    jobTitleMatches = findJobTitleMatches(fields.title.value);
+    activeJobTitleIndex = -1;
+
+    if (!jobTitleMatches.length) {
+        closeJobTitleSuggestions();
+        return;
+    }
+
+    list.innerHTML = jobTitleMatches.map((title, index) => `
+        <button
+            class="job-title-suggestion"
+            id="job-title-option-${index}"
+            type="button"
+            role="option"
+            data-job-title-index="${index}"
+            aria-selected="false"
+        >
+            ${escapeHTML(title)}
+        </button>
+    `).join("");
+
+    list.classList.remove("hidden");
+    fields.title.setAttribute("aria-expanded", "true");
+}
+
+function setActiveJobTitle(index) {
+    const options = [...document.querySelectorAll(".job-title-suggestion")];
+    if (!options.length) return;
+
+    activeJobTitleIndex = (index + options.length) % options.length;
+
+    options.forEach((option, optionIndex) => {
+        const active = optionIndex === activeJobTitleIndex;
+        option.classList.toggle("active", active);
+        option.setAttribute("aria-selected", String(active));
+    });
+
+    const activeOption = options[activeJobTitleIndex];
+    fields.title.setAttribute("aria-activedescendant", activeOption.id);
+    activeOption.scrollIntoView({ block: "nearest" });
+}
+
+function chooseJobTitle(index) {
+    const title = jobTitleMatches[index];
+    if (!title) return;
+    fields.title.value = title;
+    closeJobTitleSuggestions();
+    fields.title.focus();
+}
+
+function handleJobTitleKeydown(event) {
+    if (event.key === "ArrowDown") {
+        event.preventDefault();
+        if (!jobTitleMatches.length) renderJobTitleSuggestions();
+        if (jobTitleMatches.length) setActiveJobTitle(activeJobTitleIndex + 1);
+    } else if (event.key === "ArrowUp") {
+        event.preventDefault();
+        if (!jobTitleMatches.length) renderJobTitleSuggestions();
+        if (jobTitleMatches.length) setActiveJobTitle(activeJobTitleIndex - 1);
+    } else if (event.key === "Enter" && activeJobTitleIndex >= 0) {
+        event.preventDefault();
+        chooseJobTitle(activeJobTitleIndex);
+    } else if (event.key === "Escape") {
+        closeJobTitleSuggestions();
+    }
+}
+
+function handleJobTitleSuggestionClick(event) {
+    const option = event.target.closest("[data-job-title-index]");
+    if (!option) return;
+    chooseJobTitle(Number(option.dataset.jobTitleIndex));
+}
+
 function loadActivity() {
     try {
         return JSON.parse(localStorage.getItem(ACTIVITY_KEY) || "[]");
@@ -707,10 +836,24 @@ function handleSubmit(event) {
     const title = fields.title.value.trim();
     const date = fields.date.value;
 
-    if (!company || !title || !date) {
-        elements.formMessage.textContent = "Company, job title, and application date are required.";
+    // Clear any old custom validation messages before checking the form again.
+    fields.company.setCustomValidity("");
+    fields.title.setCustomValidity("");
+
+    // HTML required= catches empty starred fields. These two extra checks also reject whitespace-only text.
+    if (!company) fields.company.setCustomValidity("Please enter a company name.");
+    if (!title) fields.title.setCustomValidity("Please enter a job title.");
+
+    // Every field marked with * in the form has the required attribute.
+    // reportValidity() highlights the first missing field and prevents the application from saving.
+    if (!elements.form.checkValidity()) {
+        elements.formMessage.textContent = "Complete every field marked with * before saving.";
+        elements.form.reportValidity();
         return;
     }
+
+    fields.company.setCustomValidity("");
+    fields.title.setCustomValidity("");
 
     // Combine the separate interview date and time into one value for storage.
     // Example: 2026-08-15 + 14:30 becomes 2026-08-15T14:30.
@@ -962,6 +1105,24 @@ fields.company.addEventListener("blur", () => {
     // Small delay allows a mouse click on a suggestion to register first.
     setTimeout(closeCompanySuggestions, 120);
 });
+
+// Job-title autocomplete listeners use the same keyboard and mouse behavior as company autocomplete.
+fields.title.addEventListener("input", () => {
+    fields.title.setCustomValidity("");
+    renderJobTitleSuggestions();
+});
+fields.title.addEventListener("focus", () => {
+    if (fields.title.value.trim()) renderJobTitleSuggestions();
+});
+fields.title.addEventListener("keydown", handleJobTitleKeydown);
+$("jobTitleSuggestions").addEventListener("click", handleJobTitleSuggestionClick);
+fields.title.addEventListener("blur", () => {
+    setTimeout(closeJobTitleSuggestions, 120);
+});
+
+// Clear custom required-field messages as soon as the user starts correcting them.
+fields.company.addEventListener("input", () => fields.company.setCustomValidity(""));
+
 elements.grid.addEventListener("click", handleCardAction);
 elements.search.addEventListener("input", renderApplications);
 elements.filter.addEventListener("change", renderApplications);
