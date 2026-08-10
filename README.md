@@ -1,86 +1,250 @@
-# JobTrack
+# 💼 JobTrack
 
-A responsive SaaS-style job application tracker built by Kenneth Morgan using HTML, CSS, and JavaScript.
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live-success?style=for-the-badge&logo=github)
 
-## Live Demo
+A modern SaaS style job application tracker built by **Kenneth Morgan** using **HTML5**, **CSS3**, and **Vanilla JavaScript**.
 
-`https://kennethknowsit.github.io/job-application-tracker/`
+JobTrack helps job seekers organize applications, track interviews, manage follow ups, analyze their job search progress, and store important information in one place.
 
-## Features
+---
 
-- Glassmorphism dashboard
-- Add, edit, delete, search, and filter applications
-- Application status chart
+# 🌐 Live Demo
+
+### https://kennethknowsit.github.io/job-application-tracker/
+
+---
+
+# ✨ Features
+
+## Application Management
+
+- Add job applications
+- Edit existing applications
+- Delete applications
+- Required field validation
+- Responsive application form
+
+---
+
+## Smart Autocomplete
+
+- Company name autocomplete
+- Job title autocomplete
+- Learns companies you previously entered
+- Learns job titles you previously entered
+- Keyboard navigation
+- Mouse selection
+
+---
+
+## Dashboard
+
+- Total applications
+- Applied count
+- Interview count
+- Offer count
+- Rejected count
+- Recent activity
+- This week's applications
+- Response rate
+- Average application age
+
+---
+
+## Search & Filtering
+
+- Search by company
+- Search by position
+- Filter by status
+- Filter by priority
+- Filter by job source
+
+---
+
+## Interview Tracking
+
+- Interview scheduling
+- Interview time tracking
+- Follow up reminders
+- Upcoming reminders
+
+---
+
+## Analytics
+
+- Status chart
 - Monthly application analytics
-- Interview and follow-up calendar
-- Upcoming reminder panel
-- Company initials-based logos
-- Light and dark themes
-- CSV export
-- Local resume storage with IndexedDB
-- Demo data for portfolio visitors
+- Source analytics
+- Response rate
+- Dashboard statistics
+
+---
+
+## Resume Manager
+
+- Upload resume
+- Download resume
+- Delete resume
+- Browser storage using IndexedDB
+
+---
+
+## Export
+
+- Export applications to CSV
+
+---
+
+## Appearance
+
+- Light mode
+- Dark mode
 - Responsive design
-- Browser persistence with localStorage
+- Desktop
+- Tablet
+- Mobile
 
-## Privacy
+---
 
-Applications and resume files stay inside the visitor's browser. This static version does not send data to GitHub or an external server.
+# 🔒 Privacy
 
-## Project Structure
+JobTrack is a client side application.
+
+All applications, resumes, and settings remain inside the user's browser using LocalStorage and IndexedDB.
+
+No information is transmitted to external servers.
+
+---
+
+# 🛠 Tech Stack
+
+- HTML5
+- CSS3
+- JavaScript (ES6+)
+- LocalStorage
+- IndexedDB
+- Git
+- GitHub
+- GitHub Pages
+
+---
+
+# 📂 Project Structure
 
 ```text
 job-application-tracker/
+│
 ├── index.html
 ├── style.css
 ├── script.js
+├── companies.js
+├── job_titles.js
 └── README.md
 ```
 
-## Run Locally
+---
 
-Open `index.html` directly or use the Live Server extension in Visual Studio Code.
+# 🚀 Run Locally
 
-## Deploy to GitHub Pages
+Clone the repository.
 
-1. Upload the four project files to the repository root.
-2. Open repository Settings.
-3. Select Pages.
-4. Choose **Deploy from a branch**.
-5. Select `main` and `/ (root)`.
-6. Save.
+```bash
+git clone YOUR_REPOSITORY_URL
+```
 
-## Future Full-Stack Phase
+Open the project folder.
 
-- React component architecture
-- Node.js and Express REST API
-- MongoDB or PostgreSQL
-- Secure user authentication
-- Cloud file storage
-- Multi-device synchronization
-- Password reset and account management
-- Automated email reminders
+Open **index.html** in your browser.
 
-## Company autocomplete
+Or launch the project using the Live Server extension in Visual Studio Code.
 
-JobTrack includes a custom company-name autocomplete. The built-in suggestion database lives in `companies.js
-- `job_titles.js` - built-in job-title autocomplete database`, organized by employer category so it is easy to review or edit. The autocomplete also learns company names from applications saved in the browser.
+---
 
-Autocomplete controls:
-- Start typing to filter company names.
-- Use the mouse to select a suggestion.
-- Use Up/Down Arrow keys to move through suggestions.
-- Press Enter to select the highlighted company.
-- Press Escape to close the suggestion list.
+# 💡 What I Learned
 
-You can still type and save a company that is not in the built-in list.
+Developing JobTrack strengthened my understanding of:
 
+- DOM manipulation
+- Event handling
+- Form validation
+- Responsive web design
+- LocalStorage
+- IndexedDB
+- JavaScript modules
+- Autocomplete systems
+- Dashboard analytics
+- Search and filtering
+- Git and GitHub workflows
+- Organizing larger JavaScript projects
 
-## Job title autocomplete
-JobTrack now includes a separate `job_titles.js` database with hundreds of common job titles. The custom autocomplete supports mouse selection, Up/Down arrow keys, Enter, and Escape. Titles from applications you save are learned automatically, so custom titles are suggested later too.
+---
 
-## Required fields
-Every form field marked with `*` must be completed before an application can be saved. JobTrack highlights the first missing required field and displays a reminder message in the form.
+# 🔮 Future Roadmap
 
-## JobTrack 2.0 UI polish
+The next version of JobTrack will transition into a full stack application.
 
-The interface now includes a more refined SaaS-style visual system with clearer hierarchy, improved dashboard cards, more polished application cards, stronger form focus states, cleaner analytics panels, smoother interactions, improved modal presentation, and additional responsive refinements for tablet and mobile screens. These changes are presentation-focused and preserve the existing JobTrack functionality and browser-stored data.
+Planned improvements include:
+
+- React frontend
+- Node.js backend
+- Express REST API
+- PostgreSQL database
+- User authentication
+- Cloud synchronization
+- Email reminders
+- Kanban board
+- Calendar view
+- Company logo integration
+- AI powered resume suggestions
+
+---
+
+# 📈 Version History
+
+## Version 2.0
+
+- SaaS style interface redesign
+- Company autocomplete
+- Job title autocomplete
+- Required field validation
+- Dashboard improvements
+- Better analytics
+- Improved responsive design
+- Code organization improvements
+
+---
+
+## Version 1.0
+
+- CRUD application management
+- Dashboard
+- Charts
+- Resume manager
+- CSV export
+- Theme switching
+- LocalStorage persistence
+
+---
+
+# 👨‍💻 Author
+
+**Kenneth Morgan**
+
+**GitHub**
+
+https://github.com/KennethKnowsIT
+
+**LinkedIn**
+
+https://www.linkedin.com/in/kenneth-morgan-8a928017a/
+
+**Live Demo**
+
+https://kennethknowsit.github.io/job-application-tracker/
+
+---
+
+⭐ If you found this project interesting, consider starring the repository.
