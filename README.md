@@ -152,7 +152,7 @@ job-application-tracker/
 Clone the repository.
 
 ```bash
-git clone YOUR_REPOSITORY_URL
+git clone https://github.com/KennethKnowsIT/job-application-tracker.git
 ```
 
 Open the project folder.
