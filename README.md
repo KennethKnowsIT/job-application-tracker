@@ -80,3 +80,7 @@ JobTrack now includes a separate `job_titles.js` database with hundreds of commo
 
 ## Required fields
 Every form field marked with `*` must be completed before an application can be saved. JobTrack highlights the first missing required field and displays a reminder message in the form.
+
+## JobTrack 2.0 UI polish
+
+The interface now includes a more refined SaaS-style visual system with clearer hierarchy, improved dashboard cards, more polished application cards, stronger form focus states, cleaner analytics panels, smoother interactions, improved modal presentation, and additional responsive refinements for tablet and mobile screens. These changes are presentation-focused and preserve the existing JobTrack functionality and browser-stored data.
